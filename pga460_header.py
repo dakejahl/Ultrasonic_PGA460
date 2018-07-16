@@ -5,3 +5,7 @@ class pga460:
     EE_CNTRL_ADDR = 0x40
     EE_UNLOCK_ST1 = 0x68
     EE_UNLOCK_ST2 = 0x69
+    P1BL = 0x00
+    P2BL = 0x01
+    UMR = 0x05
+    SD = 0x08
