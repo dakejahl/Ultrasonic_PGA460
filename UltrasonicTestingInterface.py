@@ -4,17 +4,12 @@ from functions import *
 port = ''
 user_input = [0]
 
-print('\nCommands:')
-print('    port(path)                    e.g: port COM15')
-print('    read(addr)                    e.g: read 0')
-print('    write(addr, val)              e.g: write 0 55')
-print('    write_eeprom(file_name)       e.g: write_eeprom golden_file')
-print('')
+print_usage()
 
 while(user_input[0] != 'q'):
 
-    print('---------------------------------------')
-    print('Enter a command... (enter `q` to quit)')
+    print('\n------------------------------------------------------')
+    print('Enter a command... (enter `q` to quit or `h` for help)')
 
     user_input=list(map(str,input().split(' ')))
 
@@ -48,17 +43,23 @@ while(user_input[0] != 'q'):
         except:
             print("Unexpected error:", sys.exc_info()[0])
 
-    elif command == 'write_eeprom':
-        # try:
-        result = write_eeprom(port, 'golden_file.txt')
-        if result == 1:
-            print("All eeprom data has been successfully written and burned.")
-        else:
-            print("Failed to write to eeprom.")
-        # except:
-        #     print("Unexpected error:", sys.exc_info()[0])
-
+    elif command == 'params':
+        try:
+            result = write_parameters(port, 'golden_file.txt')
+            if result >= 1:
+                print("Wrote: %3d register(s)" % result)
+                print("All parameter data has been successfully written. Run `save` to store eeprom settings.")
+            elif result < 0:
+                print("Failed to write to eeprom.")
+            elif result == 0:
+                print("Nothing to write, eeprom already has settings")
+        except:
+            print("Unexpected error:", sys.exc_info()[0])
+    elif command == 'save':
+        save_eeprom(port)
     elif command == 'q':
         print("Exiting program.")
+    elif command == 'h':
+        print_usage()
     else:
         print("Command not recognized.")
