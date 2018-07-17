@@ -92,7 +92,7 @@ def write_parameters(port, file_name):
 
                 ser.write(buf_tx)
                 count = count + 1
-            # There are 91 fields we must write, 43 of them are eeprom and persist after power up
+            # Catch before the EOF on line 91 of param file
             if line_count == 91:
                 ser.close()
                 return count
@@ -138,8 +138,10 @@ def take_measurement(port):
     distance = time*0.000001*343/2
     amplitude = np.uint8(result[4])
     width = np.uint8(result[3])
-    print("Distance: %2.3f   Amplitude: %3d   Width:%3d" % (distance, amplitude, width))
-    return distance
+
+    results = [distance, amplitude, width]
+
+    return results
 
 def get_resonant_frequency(port):
     ser = open_serial(port)
@@ -147,14 +149,12 @@ def get_resonant_frequency(port):
     buf_tx.insert(0, pga460.SYNCBYTE)
     ser.write(buf_tx)
     result = ser.read(4)
-    print(result[1])
-    print("Measured frequency: %2.2f" % round(1000000 / (result[1] * 500), 1))
 
-    val = 1000000 / (result[1] * 500)
+    freq = 1000000 / (result[1] * 500)
+    reg_val = round((freq - 30) / 0.2)
 
-    freq_reg_val = round((val - 30) / 0.2)
-    print("Value to write to register: %d" % freq_reg_val)
-    return freq_reg_val
+    results = [freq, reg_val]
+    return results
 
 def sweep_for_best_frequency(port):
     freq = get_resonant_frequency(port)
@@ -162,7 +162,7 @@ def sweep_for_best_frequency(port):
     # Look at the 10 frequency below the diagnostic and 10 above and use the best.
     for i in range(20):
         # Write a new driving frequency
-        new_freq = freq - 10 + i
+        new_freq = freq[1] - 10 + i
         write_reg(port, 28, new_freq)
 
         # Take 6 measurements at the drive frequency, skip the first measurement and average the other 5
@@ -194,7 +194,7 @@ def sweep_for_best_frequency(port):
 
     maximum_amplitude = max(averaged_measurements_list)
     index_of_largest = averaged_measurements_list.index(maximum_amplitude)
-    best_drive_freq_reg_val = freq - 10 + index_of_largest
+    best_drive_freq_reg_val = freq[1] - 10 + index_of_largest
 
     print("\nRegister value: %d   AvgAmplitude: %d" % (best_drive_freq_reg_val, maximum_amplitude))
     write_reg(port, 28, best_drive_freq_reg_val)

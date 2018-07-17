@@ -47,6 +47,8 @@ while(user_input[0] != 'q'):
     elif command == 'params':
         try:
             result = write_parameters(port, 'golden_file.txt')
+            # First measurement after writing parameters is always bad for some strange reason. Flush the sensor.
+            take_measurement(port)
             if result >= 1:
                 print("Wrote: %7d   Register(s)" % result)
                 print("Success! Run `save` to store eeprom settings.")
@@ -66,13 +68,15 @@ while(user_input[0] != 'q'):
 
     elif command == 'measure':
         try:
-            take_measurement(port)
+            results = take_measurement(port)
+            print("Distance: %2.3f   Amplitude: %3d   Width:%3d" % (results[0], results[1], results[2]))
         except:
             print("Unexpected error:", sys.exc_info()[0])
 
     elif command == 'diag':
         try:
-            get_resonant_frequency(port)
+            results = get_resonant_frequency(port)
+            print("Frequency: %2.2f   Register Value: %2d" % (results[0], results[1]))
         except:
             print("Unexpected error:", sys.exc_info()[0])
 
