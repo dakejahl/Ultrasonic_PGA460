@@ -2,3 +2,6 @@
 __pycache__/
 golden_file.txt
 venv/
+functions.pyc
+get-pip.py
+pga460_header.pyc

@@ -1,7 +1,7 @@
 import sys
 from functions import *
 
-port = ''
+port = '/dev/ttyUSB0'
 user_input = [0]
 print("\nWelcome to the TEAL Ultrasonic PCBA calibration and test application.")
 print("To begin, first specify the communication port:  e.g. `port com15`")
@@ -76,6 +76,8 @@ while(user_input[0] != 'q'):
         except:
             print("Unexpected error:", sys.exc_info()[0])
 
+    elif command == 'sweep':
+        sweep_for_best_frequency(port)
     elif command == 'q':
         print("Exiting program.")
 
