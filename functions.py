@@ -1,6 +1,5 @@
 import numpy as np
 import serial
-import time
 
 from pga460_header import *
 
@@ -14,8 +13,8 @@ def print_usage():
     print('\nCommands:')
     print('    port(path)            Sets the port.                                 e.g: port com15             ')
     print('    params(file_name)     Writes the parameters from the file.           e.g: params golden_file.txt ')
-    print('    measure               Saves the eeproms state.                       e.g: save                   ')
-    print('    diag                  Saves the eeproms state.                       e.g: save                   ')
+    print('    cal                   Finds the best drive frequency and writes it.  e.g: cal                    ')
+    print('    measure               Takes a measurement and returns the results.   e.g: measure                ')
     print('    write(addr, val)      Writes the value to the address.               e.g: write 0 55             ')
     print('    read(addr)            Reads the value at the address.                e.g: read 0                 ')
     print('    save                  Saves the eeproms state.                       e.g: save                   ')
@@ -118,7 +117,6 @@ def save_eeprom(port):
 
 def take_measurement(port):
     ser = open_serial(port)
-
     # First command a measurement
     buf_tx = [pga460.P1BL, 0x01]
     checksum = calc_checksum(buf_tx, len(buf_tx))
@@ -197,6 +195,7 @@ def sweep_for_best_frequency(port):
     best_drive_freq_reg_val = freq[1] - 10 + index_of_largest
 
     print("\nRegister value: %d   AvgAmplitude: %d" % (best_drive_freq_reg_val, maximum_amplitude))
+    print("Frequency: %f" % float(freq[1]*0.2 + 30))
     write_reg(port, 28, best_drive_freq_reg_val)
 
 def calc_checksum(buf, len):

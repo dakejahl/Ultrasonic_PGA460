@@ -1,4 +1,5 @@
 import sys
+import time
 from functions import *
 
 port = '/dev/ttyUSB0'
@@ -73,19 +74,44 @@ while(user_input[0] != 'q'):
         except:
             print("Unexpected error:", sys.exc_info()[0])
 
-    elif command == 'diag':
-        try:
-            results = get_resonant_frequency(port)
-            print("Frequency: %2.2f   Register Value: %2d" % (results[0], results[1]))
-        except:
-            print("Unexpected error:", sys.exc_info()[0])
-
-    elif command == 'sweep':
+    elif command == 'cal':
         sweep_for_best_frequency(port)
+
     elif command == 'q':
         print("Exiting program.")
 
     elif command == 'h':
         print_usage()
+
+    elif command == 'run':
+        start_time = time.time()
+        try:
+            result = write_parameters(port, 'golden_file.txt')
+            # First measurement after writing parameters is always bad for some strange reason. Flush the sensor.
+            take_measurement(port)
+            if result >= 1:
+                print("Wrote: %7d   Register(s)" % result)
+                print("Success! Run `save` to store eeprom settings.")
+            elif result < 0:
+                print("Failed!.")
+            elif result == 0:
+                print("Already has settings.")
+        except:
+            print("Unexpected error:", sys.exc_info()[0])
+
+        try:
+            sweep_for_best_frequency(port)
+        except:
+            print("Unexpected error:", sys.exc_info()[0])
+
+        try:
+            results = take_measurement(port)
+            print("Distance: %2.3f   Amplitude: %3d   Width:%3d" % (results[0], results[1], results[2]))
+        except:
+            print("Unexpected error:", sys.exc_info()[0])
+
+        total_time = time.time() - start_time
+        print("Tests completed successfully in: %f." % total_time)
+
     else:
         print("Command not recognized.")
